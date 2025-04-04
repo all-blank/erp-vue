@@ -6,6 +6,7 @@ export interface ProductVO {
   name: string // 产品名称
   barCode: string // 产品条码
   categoryId: number // 产品类型编号
+  supplierId: number // 所属供应商编号
   unitId: number // 单位编号
   unitName?: string // 单位名字
   status: number // 产品状态
@@ -28,6 +29,11 @@ export const ProductApi = {
   // 查询产品精简列表
   getProductSimpleList: async () => {
     return await request.get({ url: `/erp/product/simple-list` })
+  },
+
+  // 通过供应商查询对应的产品列表
+  getProductListBySupplierId: async (supplierId: number) => {
+    return await request.get({ url: `/erp/product/list-by-supplierId?supplierId=` + supplierId })
   },
 
   // 查询产品详情

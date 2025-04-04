@@ -45,6 +45,23 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
+          <el-form-item label="所属供应商" prop="supplierId">
+            <el-select v-model="formData.supplierId" clearable placeholder="请选择产品所属供应商" class="w-1/1">
+              <el-option
+                v-for="supplier in supplierList"
+                :key="supplier.id"
+                :label="supplier.name"
+                :value="supplier.id"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="规格" prop="standard">
+            <el-input v-model="formData.standard" placeholder="请输入规格" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="formData.status">
               <el-radio
@@ -55,11 +72,6 @@
                 {{ dict.label }}
               </el-radio>
             </el-radio-group>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="规格" prop="standard">
-            <el-input v-model="formData.standard" placeholder="请输入规格" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -133,6 +145,7 @@
 import { ProductApi, ProductVO } from '@/api/erp/product/product'
 import { ProductCategoryApi, ProductCategoryVO } from '@/api/erp/product/category'
 import { ProductUnitApi, ProductUnitVO } from '@/api/erp/product/unit'
+import { SupplierApi, SupplierVO } from '@/api/erp/purchase/supplier'
 import { CommonStatusEnum } from '@/utils/constants'
 import { defaultProps, handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
@@ -152,6 +165,7 @@ const formData = ref({
   name: undefined,
   barCode: undefined,
   categoryId: undefined,
+  supplierId: undefined,
   unitId: undefined,
   status: undefined,
   standard: undefined,
@@ -172,6 +186,7 @@ const formRules = reactive({
 const formRef = ref() // 表单 Ref
 const categoryList = ref<ProductCategoryVO[]>([]) // 产品分类列表
 const unitList = ref<ProductUnitVO[]>([]) // 产品单位列表
+const supplierList = ref<SupplierVO[]>([]) // 供应商列表
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -193,6 +208,8 @@ const open = async (type: string, id?: number) => {
   categoryList.value = handleTree(categoryData, 'id', 'parentId')
   // 产品单位
   unitList.value = await ProductUnitApi.getProductUnitSimpleList()
+  // 产品所属供应商
+  supplierList.value = await SupplierApi.getSupplierSimpleList()
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 

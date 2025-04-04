@@ -140,6 +140,7 @@ import {
 const props = defineProps<{
   items: undefined
   disabled: false
+  supplierId?: undefined
 }>()
 const formLoading = ref(false) // 表单的加载中
 const formData = ref([])
@@ -153,6 +154,7 @@ const formRef = ref([]) // 表单 Ref
 const productList = ref<ProductVO[]>([]) // 产品列表
 const warehouseList = ref<WarehouseVO[]>([]) // 仓库列表
 const defaultWarehouse = ref<WarehouseVO>(undefined) // 默认仓库
+const productCache = new Map<number, ProductVO[]>() // 产品缓存
 
 /** 初始化设置入库项 */
 watch(
@@ -177,6 +179,17 @@ watch(
   },
   { deep: true }
 )
+
+// 监听 supplierId 变化
+watch(
+  () => props.supplierId,
+  (newSupplierId) => {
+    formData.value = [] // 清空表单
+    loadProducts(newSupplierId) // 优先读缓存
+    handleAdd() // 添加新行
+  },
+  { immediate: false }
+);
 
 /** 合计 */
 const getSummaries = (param: SummaryMethodProps) => {
@@ -246,6 +259,32 @@ const setStockCount = async (row) => {
   }
   const stock = await StockApi.getStock2(row.productId, row.warehouseId)
   row.stockCount = stock ? stock.count : 0
+}
+
+// 修改产品加载逻辑(缓存逻辑)
+const loadProducts = async (supplierId?: undefined) => {
+  try {
+    // 1、未选择供应商时，加载全部产品（不缓存）
+    if (!supplierId) {
+      productList.value = await ProductApi.getProductSimpleList()
+      return
+    }
+
+    // 2、已选择供应商时，优先读取缓存
+    const cachedProducts = productCache.get(supplierId)
+    if (cachedProducts) {
+      productList.value = cachedProducts
+      return
+    }
+
+    // 3、缓存不存在或强制刷新时请求接口
+    const freshProducts = await ProductApi.getProductListBySupplierId(supplierId)
+    // 4、更新缓存和当前列表
+    productCache.set(supplierId, freshProducts)
+    productList.value = freshProducts
+  } catch (error) {
+    ElMessage.error('产品加载失败')
+  }
 }
 
 /** 表单校验 */

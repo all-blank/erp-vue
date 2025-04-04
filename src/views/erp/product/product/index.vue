@@ -20,6 +20,15 @@
           class="!w-240px"
         />
       </el-form-item>
+      <el-form-item label="条码" prop="barCode">
+        <el-input
+          v-model="queryParams.barCode"
+          placeholder="请输入产品条码"
+          clearable
+          @keyup.enter="handleQuery"
+          class="!w-240px"
+        />
+      </el-form-item>
       <el-form-item label="分类" prop="categoryId">
         <el-tree-select
           v-model="queryParams.categoryId"
@@ -30,6 +39,22 @@
           placeholder="请输入分类"
           class="!w-240px"
         />
+      </el-form-item>
+      <el-form-item label="所属供应商" prop="supplierId" label-width="82px">
+        <el-select
+          v-model="queryParams.supplierId"
+          placeholder="请选择产品所属供应商"
+          clearable
+          class="!w-240px"
+        >
+          <!-- 动态遍历供应商列表 -->
+          <el-option
+            v-for="supplier in supplierList"
+            :key="supplier.id"
+            :label="supplier.name"
+            :value="supplier.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -62,6 +87,7 @@
       <el-table-column label="名称" align="center" prop="name" />
       <el-table-column label="规格" align="center" prop="standard" />
       <el-table-column label="分类" align="center" prop="categoryName" />
+      <el-table-column label="所属供应商" align="center" prop="supplierName" />
       <el-table-column label="单位" align="center" prop="unitName" />
       <el-table-column
         label="采购价格"
@@ -132,6 +158,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { ProductApi, ProductVO } from '@/api/erp/product/product'
 import { ProductCategoryApi, ProductCategoryVO } from '@/api/erp/product/category'
+import { SupplierApi, SupplierVO } from '@/api/erp/purchase/supplier'
 import ProductForm from './ProductForm.vue'
 import { DICT_TYPE } from '@/utils/dict'
 import { defaultProps, handleTree } from '@/utils/tree'
@@ -150,11 +177,14 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   name: undefined,
-  categoryId: undefined
+  barCode: undefined,
+  categoryId: undefined,
+  supplierId: undefined
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 const categoryList = ref<ProductCategoryVO[]>([]) // 产品分类列表
+const supplierList = ref<SupplierVO[]>([]) // 供应商列表
 
 /** 查询列表 */
 const getList = async () => {
@@ -220,5 +250,7 @@ onMounted(async () => {
   // 产品分类
   const categoryData = await ProductCategoryApi.getProductCategorySimpleList()
   categoryList.value = handleTree(categoryData, 'id', 'parentId')
+  // 产品所属供应商
+  supplierList.value = await SupplierApi.getSupplierSimpleList()
 })
 </script>

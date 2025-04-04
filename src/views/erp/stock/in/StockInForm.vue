@@ -64,7 +64,7 @@
     <ContentWrap>
       <el-tabs v-model="subTabsName" class="-mt-15px -mb-10px">
         <el-tab-pane label="入库产品清单" name="item">
-          <StockInItemForm ref="itemFormRef" :items="formData.items" :disabled="disabled" />
+          <StockInItemForm ref="itemFormRef" :items="formData.items" :disabled="disabled" :supplier-id="formData.supplierId" />
         </el-tab-pane>
       </el-tabs>
     </ContentWrap>
