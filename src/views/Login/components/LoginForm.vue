@@ -116,7 +116,7 @@
           </el-row>
         </el-form-item>
       </el-col>
-      <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
+      <!-- <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
         <el-form-item>
           <div class="w-[100%] flex justify-between">
@@ -131,7 +131,7 @@
             />
           </div>
         </el-form-item>
-      </el-col>
+      </el-col> -->
     </el-row>
   </el-form>
 </template>
@@ -173,7 +173,7 @@ const LoginRules = {
 }
 const loginData = reactive({
   isShowPassword: false,
-  captchaEnable: import.meta.env.VITE_APP_CAPTCHA_ENABLE,
+  captchaEnable: 'true',
   tenantEnable: import.meta.env.VITE_APP_TENANT_ENABLE,
   loginForm: {
     tenantName: import.meta.env.VITE_APP_DEFAULT_LOGIN_TENANT || '',

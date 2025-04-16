@@ -22,7 +22,7 @@
               clearable
               filterable
               placeholder="请选择仓库"
-              @change="onChangeWarehouse($event, row)"
+              @change="(val) => onChangeWarehouse(val, row)"
             >
               <el-option
                 v-for="item in warehouseList"
@@ -199,10 +199,12 @@ watch(
   () => props.items,
   async (val) => {
     val.forEach((item) => {
+      console.log(item.orderItemId)
       if (item.warehouseId == null) {
         item.warehouseId = defaultWarehouse.value?.id
       }
-      if (item.stockCount === null && item.warehouseId != null) {
+      // 当 warehouseId 存在时请求库存
+      if (item.stockCount === null && item.warehouseId != null && item.productId != null) {
         setStockCount(item)
       }
     })
@@ -272,6 +274,16 @@ const handleAdd = () => {
   formData.value.push(row)
 }
 
+/** 仓库变更事件 */
+const onChangeWarehouse = async (warehouseId: number, row: any) => {
+  // 当仓库变化时，清空原有库存显示
+  row.stockCount = undefined
+  // 如果有产品ID则请求新库存
+  if (row.productId && warehouseId) {
+    await setStockCount(row)
+  }
+}
+
 /** 删除按钮操作 */
 const handleDelete = (index: number) => {
   formData.value.splice(index, 1)
@@ -282,8 +294,8 @@ const setStockCount = async (row: any) => {
   if (!row.productId) {
     return
   }
-  const count = await StockApi.getStockCount(row.productId)
-  row.stockCount = count || 0
+  const stock = await StockApi.getStock2(row.productId, row.warehouseId)
+  row.stockCount = stock.count || 0
 }
 
 /** 表单校验 */

@@ -12,6 +12,8 @@ export interface PurchaseReturnVO {
   remark: string // 备注
 }
 
+
+
 // ERP 采购退货 API
 export const PurchaseReturnApi = {
   // 查询采购退货分页
@@ -58,5 +60,11 @@ export const PurchaseReturnApi = {
   // 导出采购退货 Excel
   exportPurchaseReturn: async (params: any) => {
     return await request.download({ url: `/erp/purchase-return/export-excel`, params })
+  },
+
+
+  getInItemByOrderItemId: async (orderItemId: number) => {
+    return await request.get({
+      url: `/erp/purchase-return/get-by-order-item-id?orderItemId=` + orderItemId })
   }
 }
