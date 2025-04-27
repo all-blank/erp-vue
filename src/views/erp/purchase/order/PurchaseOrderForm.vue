@@ -63,7 +63,12 @@
       <ContentWrap>
         <el-tabs v-model="subTabsName" class="-mt-15px -mb-10px">
           <el-tab-pane label="订单产品清单" name="item">
-            <PurchaseOrderItemForm ref="itemFormRef" :items="formData.items" :disabled="disabled" :supplier-id="formData.supplierId" />
+            <PurchaseOrderItemForm
+              ref="itemFormRef"
+              v-model:items="formData.items"
+              :disabled="disabled"
+              :supplier-id="formData.supplierId"
+            />
           </el-tab-pane>
         </el-tabs>
       </ContentWrap>
@@ -179,6 +184,7 @@ const userList = ref<UserApi.UserVO[]>([]) // 用户列表
 /** 子表的表单 */
 const subTabsName = ref('item')
 const itemFormRef = ref()
+
 
 /** 计算 discountPrice、totalPrice 价格 */
 watch(
