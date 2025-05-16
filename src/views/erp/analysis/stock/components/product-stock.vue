@@ -21,7 +21,7 @@ const props = defineProps({
   }
 })
 
-const WARNING_THRESHOLD = 1000
+const WARNING_THRESHOLD = 500
 const chartContainer = ref(null)
 let chartInstance = null
 const warningColor = '#ff6b6b'
@@ -40,7 +40,7 @@ const chartData = computed(() => {
     seriesData: rawProducts.map((p) => ({
       name: p.productName,
       value: p.stockCount,
-      unit: p.unit || '件',
+      unitName: p.unitName || '件',
       itemStyle: {
         color: p.stockCount < WARNING_THRESHOLD ? warningColor : '#a5d8ff'
       }

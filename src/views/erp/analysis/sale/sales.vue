@@ -9,11 +9,19 @@
     <div v-if="!loading && !error">
       <div class="header">
         <h1>各分类下产品销量</h1>
+        <el-select v-model="selectedCategoryId" placeholder="请选择分类" @change="handleCategoryChange" style="width: 200px;">
+          <el-option
+            v-for="category in categoryData"
+            :key="category.categoryId"
+            :label="category.categoryName"
+            :value="category.categoryId"
+          />
+        </el-select>
       </div>
 
       <div class="chart-grid">
-        <div v-for="category in categoryData" :key="category.categoryId" class="chart-item">
-          <category-line-chart :category-data="category" :dates="dates" />
+        <div v-if="selectedCategory" class="chart-item">
+          <category-line-chart :category-data="selectedCategory" :dates="dates" />
         </div>
       </div>
     </div>
@@ -21,18 +29,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CategoryLineChart from './components/product-sale-by-category.vue'
 import { AnalysisProductApi } from '@/api/erp/analysis/product'
 
 // 定义响应式变量
-const dates = ref([]) // 最近7天的日期列表，响应式
+const dates = ref([]) // 最近7天的日期列表
 const saleDataByDate = ref({})
 const categoryData = ref([])
+const selectedCategoryId = ref(null) // 当前选中的分类 ID
 const loading = ref(false)
 const error = ref(null)
 
-// 生成最近7天的日期列表并赋值给 dates
+// 获取选中的分类
+const selectedCategory = computed(() => {
+  return categoryData.value.find(c => c.categoryId === selectedCategoryId.value)
+})
+
+// 生成最近7天的日期列表
 const generateDates = () => {
   const datesArray = []
   const today = new Date()
@@ -91,21 +105,31 @@ const processCategoryData = () => {
   }))
 }
 
+// 处理分类选择变化
+const handleCategoryChange = (categoryId) => {
+  selectedCategoryId.value = categoryId
+}
+
 // 组件挂载时获取数据
 onMounted(async () => {
   try {
     loading.value = true
     error.value = null
 
-    // 生成最近7天的日期并赋值给响应式变量
+    // 生成最近7天的日期
     dates.value = generateDates()
 
     // 获取每一天的销售数据
     for (const date of dates.value) {
-      saleDataByDate.value[date] = await fetchSaleDataForDate(date) 
+      saleDataByDate.value[date] = await fetchSaleDataForDate(date)
     }
     // 处理分类数据
     processCategoryData()
+
+    // 默认选中第一个分类
+    if (categoryData.value.length > 0) {
+      selectedCategoryId.value = categoryData.value[0].categoryId
+    }
   } catch (err) {
     error.value = err.message || '未知错误'
   } finally {
@@ -115,7 +139,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 原有样式保持不变 */
 .loading {
   padding: 20px;
   text-align: center;
@@ -152,7 +175,7 @@ h1 {
 
 .chart-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr; /* 只显示一个图表 */
   gap: 20px;
 }
 

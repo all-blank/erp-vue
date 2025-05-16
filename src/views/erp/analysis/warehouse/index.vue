@@ -9,15 +9,19 @@
     <div v-if="!loading && !error">
       <div class="header">
         <h1>仓库库存</h1>
+        <el-select v-model="selectedWarehouseId" placeholder="请选择仓库" @change="handleWarehouseChange" style="width: 200px;">
+          <el-option
+            v-for="warehouse in warehouses"
+            :key="warehouse.warehouseId"
+            :label="warehouse.warehouseName"
+            :value="warehouse.warehouseId"
+          />
+        </el-select>
       </div>
 
       <div class="chart-grid">
-        <div
-          v-for="(warehouse, index) in warehouses"
-          :key="warehouse.warehouseId || index"
-          class="chart-item"
-        >
-          <WarehouseStockChart :warehouse="warehouse" />
+        <div v-if="selectedWarehouse" class="chart-item">
+          <WarehouseStockChart :warehouse="selectedWarehouse" />
         </div>
       </div>
     </div>
@@ -25,16 +29,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import WarehouseStockChart from './components/warehouse-stock.vue'
 import { AnalysisWarehouseApi, ErpAnalysisWarehouseStockRespVO } from '@/api/erp/analysis/warehouse'
 
 // 仓库数据
-const warehouses = ref<ErpAnalysisWarehouseStockRespVO[]>()
+const warehouses = ref<ErpAnalysisWarehouseStockRespVO[]>([])
+// 选中的仓库 ID
+const selectedWarehouseId = ref<number | null>(null)
 // 加载状态
 const loading = ref(false)
 // 错误信息
 const error = ref(null)
+
+// 获取选中的仓库
+const selectedWarehouse = computed(() => {
+  return warehouses.value.find(w => w.warehouseId === selectedWarehouseId.value)
+})
 
 // 获取仓库数据
 const fetchWarehouseData = async () => {
@@ -44,13 +55,18 @@ const fetchWarehouseData = async () => {
 
     // 调用API接口
     const response = await AnalysisWarehouseApi.getWarehouseStock()
-    // 检查响应有效性（根据实际接口结构调整）
+    // 检查响应有效性
     if (!response || !Array.isArray(response)) {
       throw new Error('无效的接口响应结构')
     }
 
     warehouses.value = response
+    // 默认选中第一个仓库
+    if (warehouses.value.length > 0) {
+      selectedWarehouseId.value = warehouses.value[0].warehouseId
+    }
   } catch (err) {
+    error.value = err.message || '未知错误'
   } finally {
     loading.value = false
   }
@@ -60,10 +76,14 @@ const fetchWarehouseData = async () => {
 onMounted(() => {
   fetchWarehouseData()
 })
+
+// 处理仓库选择变化
+const handleWarehouseChange = (warehouseId: number) => {
+  selectedWarehouseId.value = warehouseId
+}
 </script>
 
 <style scoped>
-/* 新增样式 */
 .loading {
   padding: 20px;
   text-align: center;
@@ -96,33 +116,6 @@ h1 {
   font-size: 20px;
   color: #303133;
   margin: 0;
-}
-
-.legend {
-  display: flex;
-  gap: 20px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #606266;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.warning {
-  background-color: #ff6b6b;
-}
-
-.normal {
-  background-color: #a5d8ff;
 }
 
 .chart-grid {

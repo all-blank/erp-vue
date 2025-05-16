@@ -67,8 +67,10 @@ const fetchSaleInfo = async () => {
       endTime: dayjs(end.value, 'YYYY.MM.DD').endOf('day').format('YYYY-MM-DD HH:mm:ss')
     };
     const response = await AnalysisSaleApi.getSaleInfo(params);
-    totalSaleCount.value = response.totalSaleCount || 0;
-    totalSales.value = response.totalSales || 0;
+    // totalSaleCount.value = response.totalSaleCount || 0;
+    // totalSales.value = response.totalSales || 0;
+    totalSaleCount.value = 14342;
+    totalSales.value = 422312;
   } catch (error) {
     console.error('获取销售数据失败:', error);
     totalSaleCount.value = 0;
@@ -85,8 +87,10 @@ const fetchPreviousWeekStats = async () => {
       endTime: prevEnd
     };
     const response = await AnalysisSaleApi.getSaleInfo(params);
-    prevTotalSaleCount.value = response.totalSaleCount || 0;
-    prevTotalSales.value = response.totalSales || 0;
+    // prevTotalSaleCount.value = response.totalSaleCount || 0;
+    // prevTotalSales.value = response.totalSales || 0;
+    prevTotalSaleCount.value = 13432;
+    prevTotalSales.value = 404354;
   } catch (error) {
     console.error('获取前 7 天销售数据失败:', error);
     prevTotalSaleCount.value = 0;

@@ -1,55 +1,46 @@
 <template>
   <div class="box partner-node-collect">
     <div class="header">
-      <div class="title">合作商点位数Top5</div>
+      <div class="title">客户流水Top占比</div>
       <svg-icon name="more" class="more" @click="handleMoreClick" />
     </div>
     <el-row :gutter="20" type="flex" align="middle" class="body">
       <el-col :span="17">
-        <CustomerSalesProportion :chart-option="pieChartOption" />
+        <CustomerSalesProportion :chart-option="pieChartOption" style="height: 300%;"/>
       </el-col>
       <el-col :span="7">
         <div class="collect">
           <div class="count">
-            16
+            12
           </div>
-          <div class="name">点位数</div>
+          <div class="name">总客户数</div>
           <div class="count count2">
-            5
+            7
           </div>
-          <div class="name">合作商数</div>
+          <div class="name">总供应商数</div>
         </div>
       </el-col>
     </el-row>
   </div>
 </template>
 <script setup>
+import { ref, onMounted } from 'vue';
 import CustomerSalesProportion from './customer-sales-proportion.vue'
 // 定义变量
 const pieChartOption = ref({
   seriesData: [
-    {
-      name: '金燕龙合作商',
-      value: 10,
-    },
-    {
-      name: '天华物业',
-      value: 2,
-    },
-    {
-      name: '北京合作商',
-      value: 2,
-    },
-    {
-      name: 'likede',
-      value: 1,
-    },
-    {
-      name: '佳佳',
-      value: 1,
-    },
-  ],
+  { name: '鲜果连锁超市', value: 75000 },
+  { name: '便利生活商贸', value: 42000 },
+  { name: '味之源餐饮集团', value: 88000 },
+  { name: '星辰零售连锁', value: 56000 },
+  { name: '绿地食品批发', value: 31000 },
+  { name: '优选生活超市', value: 69000 },
+  { name: '华泰贸易公司', value: 25000 },
+  { name: '金海餐饮管理', value: 94000 }
+]
 });
+
+
 </script>
 <style scoped>
 .partner-node-collect {

@@ -64,7 +64,15 @@ const fetchSaleOrderStats = async () => {
       endTime: dayjs(end.value, 'YYYY.MM.DD').endOf('day').format('YYYY-MM-DD HH:mm:ss') // 今天 23:59:59
     };
     const response = await AnalysisSaleApi.getSaleOrderStatus(params);
-    saleOrderStats.value = response || {};
+    // saleOrderStats.value = response || {};
+    saleOrderStats.value = {
+		"startTime": "",
+		"endTime": "",
+		"saleOrderTotalCount": 14,
+		"noApprovalSaleOrderCount": 2,
+		"saleOutOrderCount": 10,
+		"saleReturnOrderCount": 2 
+	 };
   } catch (error) {
     console.error('获取销售订单统计失败:', error);
     saleOrderStats.value = {};

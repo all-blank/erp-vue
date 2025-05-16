@@ -15,6 +15,9 @@ const CrescentMoon = useIcon({ icon: 'emojione-monotone:crescent-moon', color: '
 
 const appStore = useAppStore()
 
+// 设置默认主题为浅色模式（sun模式）
+appStore.setIsDark(false)
+
 // 初始化获取是否是暗黑主题
 const isDark = ref(appStore.getIsDark)
 

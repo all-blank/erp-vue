@@ -38,6 +38,7 @@ const initChart = () => {
 
   chartInstance = echarts.init(chartContainer.value)
 
+  console.log(props.warehouse.warehouseName)
   const option = {
     title: {
       text: props.warehouse.warehouseName,
@@ -174,8 +175,22 @@ const initChart = () => {
   chartInstance.setOption(option)
 }
 
+// 监听仓库数据变化
+watch(() => props.warehouse, (newWarehouse) => {
+  if (newWarehouse) {
+    initChart() // 仓库变化时重新初始化图表
+  }
+}, { immediate: true })
+
 const updateChart = () => {
   if (!chartInstance) return
+
+  const updatedSeriesData = chartData.value.seriesData.map((item, index) => ({
+    ...item,
+    itemStyle: {
+      color: index % 2 === 0 ? '#5470c6' : '#fac858'
+    }
+  }))
 
   const dataZoomOption = {
     show: props.warehouse.products.length > 7,
@@ -185,7 +200,33 @@ const updateChart = () => {
 
   chartInstance.setOption({
     yAxis: { data: chartData.value.yAxisData },
-    series: [{ data: chartData.value.seriesData }],
+    series: [{
+      type: 'bar',
+      data: updatedSeriesData,
+      barWidth: '65%',
+      label: {
+        show: true,
+        position: 'right',
+        formatter: ({ value, data }) => {
+          return value == 0 ? `{warning|${value}}` : `{normal|${value} ${data.unitName}}`
+        },
+        rich: {
+          warning: {
+            color: warningColor,
+            fontWeight: 'bold'
+          },
+          normal: {
+            color: '#00cc00',
+            fontWeight: 'bold'
+          }
+        }
+      },
+      itemStyle: {
+        borderWidth: 1,
+        borderColor: '#fff',
+        borderRadius: [0, 5, 5, 0]
+      }
+    }],
     dataZoom: [dataZoomOption]
   })
 }

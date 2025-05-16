@@ -99,7 +99,7 @@
                 @click="setLoginState(LoginStateEnum.MOBILE)"
               />
             </el-col>
-            <el-col :span="8">
+            <!-- <el-col :span="8">
               <XButton
                 :title="t('login.btnQRCode')"
                 class="w-[100%]"
@@ -112,7 +112,7 @@
                 class="w-[100%]"
                 @click="setLoginState(LoginStateEnum.REGISTER)"
               />
-            </el-col>
+            </el-col> -->
           </el-row>
         </el-form-item>
       </el-col>
