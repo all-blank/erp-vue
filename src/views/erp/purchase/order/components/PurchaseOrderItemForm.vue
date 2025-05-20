@@ -108,9 +108,7 @@
       <el-table-column label="税额" prop="taxPrice" fixed="right" min-width="120">
         <template #default="{ row, $index }">
           <el-form-item :prop="`${$index}.taxPrice`" class="mb-0px!">
-            <el-form-item :prop="`${$index}.taxPrice`" class="mb-0px!">
-              <el-input disabled v-model="row.taxPrice" :formatter="erpPriceInputFormatter" />
-            </el-form-item>
+            <el-input disabled v-model="row.taxPrice" :formatter="erpPriceInputFormatter" />
           </el-form-item>
         </template>
       </el-table-column>
@@ -139,6 +137,7 @@
     <el-button @click="handleAdd" round>+ 添加采购产品</el-button>
   </el-row>
 </template>
+
 <script setup lang="ts">
 import { ProductApi, ProductVO } from '@/api/erp/product/product'
 import { StockApi } from '@/api/erp/stock/stock'
@@ -150,87 +149,54 @@ import {
 } from '@/utils'
 
 const props = defineProps<{
-  items: undefined
-  disabled: false
-  supplierId?: undefined
+  items: any[] // 订单产品清单
+  disabled: boolean // 是否禁用表单
+  supplierId?: number // 供应商 ID
 }>()
-const formLoading = ref(false) // 表单的加载中
-const formData = ref([])
+
+const formLoading = ref(false) // 表单加载状态
+const formData = ref(props.items || []) // 产品清单数据
 const formRules = reactive({
   productId: [{ required: true, message: '产品不能为空', trigger: 'blur' }],
   productPrice: [{ required: true, message: '产品单价不能为空', trigger: 'blur' }],
   count: [{ required: true, message: '产品数量不能为空', trigger: 'blur' }]
 })
-const formRef = ref([]) // 表单 Ref
+const formRef = ref() // 表单引用
 const productList = ref<ProductVO[]>([]) // 产品列表
 const productCache = new Map<number, ProductVO[]>() // 产品缓存
 
-/** 初始化设置入库项 */
+// 同步父组件传入的 items 到 formData
 watch(
   () => props.items,
-  async (val) => {
-    formData.value = val
+  (val) => {
+    formData.value = val || []
   },
   { immediate: true }
 )
 
-/** 监听合同产品变化，计算合同产品总价 */
+// 计算产品价格相关字段
 watch(
   () => formData.value,
   (val) => {
-    if (!val || val.length === 0) {
-      return
-    }
-    // 循环处理
+    if (!val || val.length === 0) return
     val.forEach((item) => {
       item.totalProductPrice = erpPriceMultiply(item.productPrice, item.count)
       item.taxPrice = erpPriceMultiply(item.totalProductPrice, item.taxPercent / 100.0)
-      if (item.totalProductPrice != null) {
-        item.totalPrice = item.totalProductPrice + (item.taxPrice || 0)
-      } else {
-        item.totalPrice = undefined
-      }
+      item.totalPrice = item.totalProductPrice + (item.taxPrice || 0)
     })
   },
   { deep: true }
 )
 
-// 监听 supplierId 变化
+// 监听 supplierId 变化，仅加载产品列表
 watch(
   () => props.supplierId,
   (newSupplierId) => {
-    formData.value = [] // 清空表单
-    loadProducts(newSupplierId) // 优先读缓存
-    handleAdd() // 添加新行
-  },
-  { immediate: false }
-)
-
-
-// 子组件 PurchaseOrderItemForm 中
-const emit = defineEmits(['update:items']) // 声明更新事件
-
-// 在修改 formData 的所有操作后触发更新
-watch(
-  formData,
-  (newVal) => {
-    emit('update:items', newVal) // 同步到父组件
-  },
-  { deep: true }
-)
-
-// 修改供应商切换逻辑
-watch(
-  () => props.supplierId,
-  (newSupplierId) => {
-    formData.value.splice(0, formData.value.length) // 清空数组保持引用
     loadProducts(newSupplierId)
-    handleAdd()
-    emit('update:items', formData.value) // 显式触发更新
   }
 )
 
-/** 合计 */
+// 计算表格合计
 const getSummaries = (param: SummaryMethodProps) => {
   const { columns, data } = param
   const sums: string[] = []
@@ -247,17 +213,16 @@ const getSummaries = (param: SummaryMethodProps) => {
       sums[index] = ''
     }
   })
-
   return sums
 }
 
-/** 新增按钮操作 */
+// 添加新产品行
 const handleAdd = () => {
   const row = {
     id: undefined,
     productId: undefined,
-    productUnitName: undefined, // 产品单位
-    productBarCode: undefined, // 产品条码
+    productUnitName: undefined,
+    productBarCode: undefined,
     productPrice: undefined,
     stockCount: undefined,
     count: 1,
@@ -270,12 +235,12 @@ const handleAdd = () => {
   formData.value.push(row)
 }
 
-/** 删除按钮操作 */
+// 删除产品行
 const handleDelete = (index: number) => {
   formData.value.splice(index, 1)
 }
 
-/** 处理产品变更 */
+// 处理产品选择变化
 const onChangeProduct = (productId, row) => {
   const product = productList.value.find((item) => item.id === productId)
   if (product) {
@@ -283,44 +248,29 @@ const onChangeProduct = (productId, row) => {
     row.productBarCode = product.barCode
     row.productPrice = product.purchasePrice
   }
-  // 加载库存
   setStockCount(row)
 }
 
-/** 加载库存 */
+// 加载产品库存
 const setStockCount = async (row: any) => {
-  if (!row.productId) {
-    return
-  }
+  if (!row.productId) return
   const count = await StockApi.getStockCount(row.productId)
   row.stockCount = count || 0
 }
 
-/** 表单校验 */
-const validate = () => {
-  return formRef.value.validate()
-}
-defineExpose({ validate })
-
-// 修改产品加载逻辑(缓存逻辑)
-const loadProducts = async (supplierId?: undefined) => {
+// 加载产品列表
+const loadProducts = async (supplierId?: number) => {
   try {
-    // 1、未选择供应商时，加载全部产品（不缓存）
     if (!supplierId) {
       productList.value = await ProductApi.getProductSimpleList()
       return
     }
-
-    // 2、已选择供应商时，优先读取缓存
     const cachedProducts = productCache.get(supplierId)
     if (cachedProducts) {
       productList.value = cachedProducts
       return
     }
-
-    // 3、缓存不存在或强制刷新时请求接口
     const freshProducts = await ProductApi.getProductListBySupplierId(supplierId)
-    // 4、更新缓存和当前列表
     productCache.set(supplierId, freshProducts)
     productList.value = freshProducts
   } catch (error) {
@@ -328,12 +278,17 @@ const loadProducts = async (supplierId?: undefined) => {
   }
 }
 
-/** 初始化 */
-onMounted(async () => {
-  productList.value = await ProductApi.getProductSimpleList()
-  // 默认添加一个
+// 初始化时为新建订单添加一行
+onMounted(() => {
   if (formData.value.length === 0) {
     handleAdd()
   }
+  loadProducts(props.supplierId)
 })
+
+// 表单校验方法
+const validate = () => {
+  return formRef.value.validate()
+}
+defineExpose({ validate })
 </script>
