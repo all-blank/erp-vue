@@ -25,6 +25,7 @@ module.exports = defineConfig({
     '@unocss'
   ],
   rules: {
+    'vue/no-ref-as-operand': 'warn',
     'vue/no-setup-props-destructure': 'off',
     'vue/script-setup-uses-vars': 'error',
     'vue/no-reserved-component-names': 'off',

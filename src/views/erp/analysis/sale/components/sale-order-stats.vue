@@ -59,12 +59,14 @@ const end = ref(dayjs().endOf('day').format('YYYY.MM.DD')); // 今天 23:59:59�
 const fetchSaleOrderStats = async () => {
   try {
     loading.value = true;
+    console.log(start.value, end.value);
     const params = {
       startTime: dayjs(start.value, 'YYYY.MM.DD').startOf('day').format('YYYY-MM-DD HH:mm:ss'),
       endTime: dayjs(end.value, 'YYYY.MM.DD').endOf('day').format('YYYY-MM-DD HH:mm:ss') // 今天 23:59:59
     };
     const response = await AnalysisSaleApi.getSaleOrderStatus(params);
     // saleOrderStats.value = response || {};
+    console.log(response);
     saleOrderStats.value = {
 		"startTime": "",
 		"endTime": "",
